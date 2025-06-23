@@ -1,6 +1,7 @@
 "use client"
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 
 export default function CreatePostPage() {
     const [error, setError] = useState<string | null>(null);
@@ -28,11 +29,11 @@ export default function CreatePostPage() {
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 font-[family-name:var(--font-geist-sans)]">
       <header className="border-b border-gray-200 dark:border-gray-800">
         <div className="container mx-auto flex h-16 items-center justify-between px-4">
-          <a href="/" className="flex items-center space-x-2">
+          <Link href="/" className="flex items-center space-x-2">
             <span className="font-bold text-lg text-gray-900 dark:text-gray-100">
               My App
             </span>
-          </a>
+          </Link>
           <div className="flex items-center space-x-4">
             <div className="w-10 h-10 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center cursor-pointer">
               <svg

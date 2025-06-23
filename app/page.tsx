@@ -35,7 +35,7 @@ export default function Home() {
   }, []);
 
   useEffect(() => {
-    let sortedPosts = [...posts];
+    const sortedPosts = [...posts];
     if (activeTab === 'All') {
       setFilteredPosts(posts);
     } else if (activeTab === 'Most Liked') {
@@ -57,17 +57,17 @@ export default function Home() {
     <div className="min-h-screen flex flex-col font-[family-name:var(--font-geist-sans)] bg-gray-50 dark:bg-gray-900">
       <header className="border-b border-gray-200 dark:border-gray-800">
         <div className="container mx-auto flex h-16 items-center justify-between px-4">
-          <a href="/" className="flex items-center space-x-2">
+          <Link href="/" className="flex items-center space-x-2">
             <span className="font-bold text-lg text-gray-900 dark:text-gray-100">
               FeatureKeys
             </span>
-          </a>
+          </Link>
           <div className="flex items-center space-x-4">
             {session ? (
               <>
-                <a href={"/create"} className="bg-blue-600 text-white hover:bg-blue-700 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
+                <Link href={"/create"} className="bg-blue-600 text-white hover:bg-blue-700 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
                   Create
-                </a>
+                </Link>
                 <div className="relative">
                   <div 
                     className="w-10 h-10 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center cursor-pointer hover:bg-gray-300 dark:hover:bg-gray-600"

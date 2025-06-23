@@ -2,7 +2,7 @@ import dbConnect from "@/lib/db";
 import FeaturePost from "@/lib/featurePost";
 import { NextResponse } from "next/server";
 
-export async function GET(req: Request) {
+export async function GET() {
     await dbConnect();
 
     const posts = await FeaturePost.find({}).populate('userId', 'username');

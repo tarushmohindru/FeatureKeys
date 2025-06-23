@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 
 export default function EditPostPage({ params }: { params: { id: string } }) {
   const [title, setTitle] = useState('');
@@ -34,11 +35,11 @@ export default function EditPostPage({ params }: { params: { id: string } }) {
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 font-[family-name:var(--font-geist-sans)]">
         <header className="border-b border-gray-200 dark:border-gray-800">
             <div className="container mx-auto flex h-16 items-center justify-between px-4">
-            <a href="/" className="flex items-center space-x-2">
+            <Link href="/" className="flex items-center space-x-2">
                 <span className="font-bold text-lg text-gray-900 dark:text-gray-100">
                 My App
                 </span>
-            </a>
+            </Link>
             </div>
         </header>
         <main className="container mx-auto p-4">
