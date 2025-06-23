@@ -1,103 +1,149 @@
-import Image from "next/image";
+'use client';
+
+import { useState, useEffect } from 'react';
+import { useSession, signOut } from 'next-auth/react';
+import Link from 'next/link';
+import PostCard from '@/components/PostCard';
+
+interface Post {
+  _id: string;
+  title: string;
+  body: string;
+  userId: {
+    _id: string;
+    username: string;
+  };
+  status: string;
+  likes: string[];
+}
 
 export default function Home() {
-  return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm/6 text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-[family-name:var(--font-geist-mono)] font-semibold">
-              app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+  const [posts, setPosts] = useState<Post[]>([]);
+  const [filteredPosts, setFilteredPosts] = useState<Post[]>([]);
+  const [activeTab, setActiveTab] = useState('All');
+  const [showProfileMenu, setShowProfileMenu] = useState(false);
+  const { data: session } = useSession();
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
+  useEffect(() => {
+    const fetchPosts = async () => {
+      const res = await fetch('/api/posts');
+      const data = await res.json();
+      setPosts(data.posts);
+      setFilteredPosts(data.posts);
+    };
+    fetchPosts();
+  }, []);
+
+  useEffect(() => {
+    let sortedPosts = [...posts];
+    if (activeTab === 'All') {
+      setFilteredPosts(posts);
+    } else if (activeTab === 'Most Liked') {
+      sortedPosts.sort((a, b) => b.likes.length - a.likes.length);
+      setFilteredPosts(sortedPosts);
+    } else {
+      const filtered = posts.filter(post => post.status === activeTab);
+      setFilteredPosts(filtered);
+    }
+  }, [activeTab, posts]);
+
+  const isAdmin = session?.user?.role === 'admin';
+
+  const handleSignOut = () => {
+    signOut({ callbackUrl: '/signin' });
+  };
+
+  return (
+    <div className="min-h-screen flex flex-col font-[family-name:var(--font-geist-sans)] bg-gray-50 dark:bg-gray-900">
+      <header className="border-b border-gray-200 dark:border-gray-800">
+        <div className="container mx-auto flex h-16 items-center justify-between px-4">
+          <a href="/" className="flex items-center space-x-2">
+            <span className="font-bold text-lg text-gray-900 dark:text-gray-100">
+              FeatureKeys
+            </span>
           </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+          <div className="flex items-center space-x-4">
+            {session ? (
+              <>
+                <a href={"/create"} className="bg-blue-600 text-white hover:bg-blue-700 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
+                  Create
+                </a>
+                <div className="relative">
+                  <div 
+                    className="w-10 h-10 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center cursor-pointer hover:bg-gray-300 dark:hover:bg-gray-600"
+                    onClick={() => setShowProfileMenu(!showProfileMenu)}
+                  >
+                    <svg
+                      className="w-6 h-6 text-gray-600 dark:text-gray-400"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth="2"
+                        d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+                      ></path>
+                    </svg>
+                  </div>
+                  {showProfileMenu && (
+                    <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-md shadow-lg border border-gray-200 dark:border-gray-700 z-50">
+                      <div className="px-4 py-3 border-b border-gray-200 dark:border-gray-700">
+                        <p className="text-sm text-gray-900 dark:text-gray-100">Welcome, {session.user?.name}</p>
+                        <p className="text-xs text-gray-500 dark:text-gray-400">{session.user?.email}</p>
+                      </div>
+                      <button
+                        onClick={handleSignOut}
+                        className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20"
+                      >
+                        Sign Out
+                      </button>
+                    </div>
+                  )}
+                </div>
+              </>
+            ) : (
+              <div className="flex items-center space-x-2">
+                <Link href="/signin" className="text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200">
+                  Sign In
+                </Link>
+                <Link href="/signup" className="bg-blue-600 text-white hover:bg-blue-700 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
+                  Sign Up
+                </Link>
+              </div>
+            )}
+          </div>
+        </div>
+      </header>
+      <main className="flex-1">
+        <div className="container mx-auto p-4">
+            <div className="mb-4 border-b border-gray-200 dark:border-gray-700">
+                <ul className="flex flex-wrap -mb-px text-sm font-medium text-center" id="myTab" data-tabs-toggle="#myTabContent" role="tablist">
+                    <li className="mr-2" role="presentation">
+                        <button onClick={() => setActiveTab('All')} className={`inline-block p-4 border-b-2 rounded-t-lg ${activeTab === 'All' ? 'border-blue-500' : 'border-transparent hover:text-gray-600 hover:border-gray-300 dark:hover:text-gray-300'}`} type="button">All</button>
+                    </li>
+                    <li className="mr-2" role="presentation">
+                        <button onClick={() => setActiveTab('Pending')} className={`inline-block p-4 border-b-2 rounded-t-lg ${activeTab === 'Pending' ? 'border-blue-500' : 'border-transparent hover:text-gray-600 hover:border-gray-300 dark:hover:text-gray-300'}`} type="button">Pending</button>
+                    </li>
+                    <li className="mr-2" role="presentation">
+                        <button onClick={() => setActiveTab('In Progress')} className={`inline-block p-4 border-b-2 rounded-t-lg ${activeTab === 'In Progress' ? 'border-blue-500' : 'border-transparent hover:text-gray-600 hover:border-gray-300 dark:hover:text-gray-300'}`} type="button">In Progress</button>
+                    </li>
+                    <li className="mr-2" role="presentation">
+                        <button onClick={() => setActiveTab('Completed')} className={`inline-block p-4 border-b-2 rounded-t-lg ${activeTab === 'Completed' ? 'border-blue-500' : 'border-transparent hover:text-gray-600 hover:border-gray-300 dark:hover:text-gray-300'}`} type="button">Completed</button>
+                    </li>
+                    <li className="mr-2" role="presentation">
+                        <button onClick={() => setActiveTab('Most Liked')} className={`inline-block p-4 border-b-2 rounded-t-lg ${activeTab === 'Most Liked' ? 'border-blue-500' : 'border-transparent hover:text-gray-600 hover:border-gray-300 dark:hover:text-gray-300'}`} type="button">Most Liked</button>
+                    </li>
+                </ul>
+            </div>
+
+          {filteredPosts.map(post => (
+            <PostCard key={post._id} post={post} isAdmin={isAdmin} />
+          ))}
         </div>
       </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
     </div>
   );
 }

@@ -1,0 +1,83 @@
+"use client"
+import Link from 'next/link';
+import React, { useState } from 'react';
+import { signIn } from 'next-auth/react';
+import { useRouter } from 'next/navigation';
+
+export default function SigninPage() {
+  const [form, setForm] = useState({ username: '', password: '' });
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
+  const router = useRouter();
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setForm({ ...form, [e.target.name]: e.target.value });
+    setError('');
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError('');
+    setLoading(true);
+
+    try {
+      const result = await signIn('credentials', {
+        redirect: false,
+        login: form.username,
+        password: form.password,
+      });
+
+      if (result?.error) {
+        setError(result.error);
+      } else {
+        router.push('/');
+      }
+    } catch (err) {
+      setError('An unexpected error occurred. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-black bg-opacity-90">
+      <form
+        onSubmit={handleSubmit}
+        className="bg-zinc-900 bg-opacity-80 p-8 rounded-xl shadow-lg w-full max-w-md flex flex-col gap-6"
+      >
+        <h2 className="text-3xl font-bold text-white text-center mb-2">Sign In</h2>
+        <p className="text-zinc-300 text-center mb-4">Welcome back! Please sign in to continue.</p>
+        <input
+          type="text"
+          name="username"
+          placeholder="Username or Email"
+          value={form.username}
+          onChange={handleChange}
+          className="px-4 py-3 rounded-lg bg-zinc-800 text-white placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-violet-500"
+          autoComplete="username"
+          required
+        />
+        <input
+          type="password"
+          name="password"
+          placeholder="Password"
+          value={form.password}
+          onChange={handleChange}
+          className="px-4 py-3 rounded-lg bg-zinc-800 text-white placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-violet-500"
+          autoComplete="current-password"
+          required
+        />
+        {error && <div className="text-pink-400 text-sm text-center">{error}</div>}
+        <button
+          type="submit"
+          className="mt-2 py-3 rounded-lg bg-violet-600 hover:bg-violet-500 text-white font-semibold transition-colors shadow-md"
+          disabled={loading}
+        >
+          {loading ? 'Signing In...' : 'Sign In'}
+        </button>
+
+        <Link href={"/signup"} className="mt-2 py-3 text-white text-center w-full">Don&apos;t have an account? Sign up instead</Link>
+      </form>
+    </div>
+  );
+}
